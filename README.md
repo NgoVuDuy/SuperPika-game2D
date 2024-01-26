@@ -1,4 +1,4 @@
-Your site is live at https://ngovuduy.github.io/Game2D/
+Play my game at https://ngovuduy.github.io/Game2D/
 
 - Player:
 
