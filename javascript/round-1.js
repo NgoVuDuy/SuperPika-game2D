@@ -1,10 +1,15 @@
 var balls;
 var score = 0;
 var text;
-var live = 3
+var live = 10
+
+let tpArray = [];
+
+const namePlayer = localStorage.getItem('name-player')
 
 
-class Main extends Phaser.Scene {
+
+class Round1 extends Phaser.Scene {
 
     // //INIT: Bản đồ
     // map;
@@ -51,49 +56,49 @@ class Main extends Phaser.Scene {
     preload() {
 
         //LOAD: Các ô bản đồ
-        this.load.image('tiles', 'img/tiles1.png');
+        this.load.image('tiles', '../img/tiles1.png');
 
         //LOAD: Bản đồ trò chơi
-        this.load.tilemapCSV('map', 'img/map.csv');
+        this.load.tilemapCSV('map', '../img/map.csv');
 
         //LOAD: Người chơi
-        this.load.spritesheet('player', 'img/player.png', { frameWidth: 50, frameHeight: 50 });
+        this.load.spritesheet('player', '../img/player.png', { frameWidth: 50, frameHeight: 50 });
 
         //LOAD: Phần thưởng
-        this.load.image('star', 'img/star.png');
+        this.load.image('star', '../img/star.png');
 
         //LOAD: Đạn quái vật
-        this.load.image('bullet', 'img/bullet.png');
+        this.load.image('bullet', '../img/bullet.png');
 
         //LOAD: Đạn người chơi
-        this.load.image('bullet1', 'img/bullet.png');
+        this.load.image('bullet1', '../img/bullet.png');
 
         //LOAD: Dung nham
-        this.load.image('lava', 'img/lava1.png');
+        this.load.image('lava', '../img/lava1.png');
 
         //LOAD: Chướng ngại vật
-        this.load.image('rock', 'img/rock.png');
+        this.load.image('rock', '../img/rock.png');
 
         //LOAD: Hiệu ứng chết
-        this.load.spritesheet('boom', 'img/explosion.png', { frameWidth: 64, frameHeight: 64, endFrame: 23 });
+        this.load.spritesheet('boom', '../img/explosion.png', { frameWidth: 64, frameHeight: 64, endFrame: 23 });
 
         //LOAD: Rồng
-        this.load.spritesheet('dragon', 'img/dragon.png', { frameWidth: 96, frameHeight: 64 });
+        this.load.spritesheet('dragon', '../img/dragon.png', { frameWidth: 96, frameHeight: 64 });
 
         //LOAD: Xác ướp
-        this.load.spritesheet('mummy', 'img/mummy.png', { frameWidth: 37, frameHeight: 45 });
+        this.load.spritesheet('mummy', '../img/mummy.png', { frameWidth: 37, frameHeight: 45 });
 
         //LOAD: Khủng long
-        this.load.spritesheet('monster', 'img/monster2.png', {frameWidth: 50, frameHeight: 50});
+        this.load.spritesheet('monster', '../img/monster2.png', {frameWidth: 50, frameHeight: 50});
 
         //LOAD: Âm thanh
-        this.load.audioSprite('sfx', 'audio/fx_mixdown.json', [
-            'audio/fx_mixdown.ogg',
-            'audio/fx_mixdown.mp3'
+        this.load.audioSprite('sfx', '../audio/fx_mixdown.json', [
+            '../audio/fx_mixdown.ogg',
+            '../audio/fx_mixdown.mp3'
         ]);
 
         //LOAD: Chướng ngại vật có thể ẩn
-        this.load.image('tp', 'img/tp.png');
+        this.load.image('tp', '../img/tp.png');
 
     }
 
@@ -102,12 +107,14 @@ class Main extends Phaser.Scene {
         //CALL: Tạo bản đồ trò chơi
         this.createMap();
 
+        //CALL: Khởi tạo đạn bắn
+        this.createBullets();
+
         //CALL: Tạo người chơi
         this.createPlayer();
 
         //CALL: Tạo hiệu ứng
         this.createAnimation();
-
 
         //CALL: Tạo rồng
         this.createDragon();
@@ -121,14 +128,14 @@ class Main extends Phaser.Scene {
         //CALL: Tạo chướng ngại vật
         this.createRocks();
 
+        //CALL: Tạo chướng ngại vật biến mất
+        this.createClounds();
+
         //CALL: Tạo cameras
         this.createCameras();
 
         //CALL: Tạo tương tác bàn phím
         this.createCursorKeys();
-
-        //CALL: Khởi tạo đạn bắn
-        this.createBullets();
 
         //CALL: Tạo xác ướp
         this.createMummy();
@@ -137,7 +144,7 @@ class Main extends Phaser.Scene {
         // this.createLavas();
         
         // > Cấu hình thế giới
-        this.physics.world.setBounds(0, 0, 10000, 1000);
+        this.physics.world.setBounds(0, 0, 20000, 1000);
 
         // > Tạo con trỏ
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -146,88 +153,19 @@ class Main extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.stars, collectStar, null, this); // > Người chơi là các ngôi sao
 
         // // // > In tên âm thanh
-        // const spritemap = this.cache.json.get('sfx').spritemap;
-        // for (let spriteName in spritemap)
-        // {
-        //     console.log(spriteName)
-        // }
+        const spritemap = this.cache.json.get('sfx').spritemap;
+        for (let spriteName in spritemap)
+        {
+            console.log(spriteName)
+        }
 
-        //tạo chuyển động cho quái
-        // this.anims.create({
-        //     key: 'fire',
-        //     frames: this.anims.generateFrameNumbers('monster'),
-        //     frameRate: 4,
-        //     repeat: -1
-        // });
-        
-        // // thêm quái
-        // this.monster = this.physics.add.sprite(x, y, 'monster',1);
-        // this.physics.add.collider(this.monster, layer);
+        // > Đưa thông tin màn chơi lên localstorage
 
-        // this.monster.play({ key: 'fire' });
+        localStorage.setItem("round", 1);
 
 
-        // this.monster.body.immovable = true;
-        // this.monster.body.allowGravity = false;
-
-        // this.tweens.chain({
-        //     targets: this.monster.body.velocity,
-        //     loop: -1,
-        //     tweens: [
-        //         { x:    100, y: 0, duration: 2000, ease: 'Stepped' },
-        //         { x:    -100, y:    0, duration: 2000, ease: 'Stepped' },
-        //         // { x:  150, y:  100, duration: 4000, ease: 'Stepped' },
-        //         // { x:    0, y: -200, duration: 2000, ease: 'Stepped' },
-        //         // { x:    0, y:    0, duration: 1000, ease: 'Stepped' },
-        //         // { x: -150, y:  100, duration: 4000, ease: 'Stepped' }
-        //     ]
-        // });
-        
-        
-        // const config2 = {
-        //     key: 'explode2',
-        //     frames: this.anims.generateFrameNumbers('boom', { start: 0, end: 23 }),
-        //     frameRate: 20,
-        //     repeat: 0
-        // };
-        // this.anims.create(config2);
 
 
-        // tạo phần thưởng
-        
-
-        // xủ lý màn hình di chuyển theo người chơi
-
-    
-        // khởi tạo đạn
-        
-        // Tạo một biến thời gian để kiểm soát tốc độ bắn
-        // this.shootTimer = this.time.addEvent({
-        //     delay: 3000, // Thời gian giữa mỗi lần bắn (500 milliseconds)
-        //     loop: true,
-        //     callback: () => {
-        //         if(this.canShoot) {
-
-        //             const bullet = this.bullets.getFirstDead(false);
-        //             if(bullet) {
-        //                 bullet.fire(this.monster.x, this.monster.y, -400 , 0);
-        //                 // bullet.fire(this.dragon.x, this.dragon.y, -400, 100);
-    
-        //                 this.monsterBullets.push(bullet);
-        //             }
-        //         }
-
-        //     }
-        // });
-
-        // Tạo dung nham
-        
-
-        // xử lý va chạm đạn và người chơi
-
-
-        // this.physics.add.collider(this.player, this.rock);
-        // this.physics.add.overlap(this.bullet1s, this.monster, () => hiddenMonster.call(this,x, y), null, this);
     }
     update(time, delta) {
 
@@ -241,7 +179,7 @@ class Main extends Phaser.Scene {
                 live -= 1
 
                 text.setText([
-                    'Tên ' + 'Player1',
+                    'Tên ' + namePlayer,
                     'Mạng ' + live,
                     'Score ' + score
                 ])
@@ -255,6 +193,13 @@ class Main extends Phaser.Scene {
                     }
                 }
 
+                tpArray.forEach(tp => {
+                    tp.destroy();
+                });
+                // Sau khi hủy tất cả các đối tượng, bạn có thể muốn làm sạch mảng
+                tpArray = [];
+
+                this.createClounds()
 
             } else
 
@@ -264,7 +209,7 @@ class Main extends Phaser.Scene {
                 live -= 1
 
                 text.setText([
-                    'Tên ' + 'Player1',
+                    'Tên ' + namePlayer,
                     'Mạng ' + live,
                     'Score ' + score
                 ])
@@ -286,7 +231,7 @@ class Main extends Phaser.Scene {
                 live -= 1
 
                 text.setText([
-                    'Tên ' + 'Player1',
+                    'Tên ' + namePlayer,
                     'Mạng ' + live,
                     'Score ' + score
                 ])
@@ -297,6 +242,8 @@ class Main extends Phaser.Scene {
                     if(result) {
                         this.player.setPosition(100, 100)
                         window.location.reload()
+                    } else {
+
                     }
                 }
             }
@@ -392,14 +339,14 @@ class Main extends Phaser.Scene {
         this.anims.create({
             key: 'left',
             frames: this.anims.generateFrameNumbers('player', { start: 1, end: 0 }),
-            frameRate: 6,
+            frameRate: 7,
             repeat: -1
         });
 
         this.anims.create({
             key: 'right',
             frames: this.anims.generateFrameNumbers('player', { start: 2, end: 3 }),
-            frameRate: 6,
+            frameRate: 7,
             repeat: -1
         });
 
@@ -444,15 +391,15 @@ class Main extends Phaser.Scene {
 
         this.mummies = this.physics.add.group({
             allowGravity: true,
-            // bounceX: 0.5,
-            // bounceY: 0.5,
+            bounceX: 0.2,
+            bounceY: 0.2,
             collideWorldBounds: true,
             // velocityY: -100
         });
 
         this.mummies.createMultiple([
-            { key: 'mummy', quantity: 3, setXY: { x: 640, y: 100, stepX:  150} },
-            { key: 'mummy', quantity: 3, setXY: { x: 1180, y: 100, stepX:  150} },
+            { key: 'mummy', quantity: 3, setXY: { x: 630, y: 100, stepX:  150} },
+            { key: 'mummy', quantity: 3, setXY: { x: 1170, y: 100, stepX:  150} },
 
         ]);
 
@@ -468,7 +415,7 @@ class Main extends Phaser.Scene {
                 flipX: true,
                 delay: 2000,
                 // y: mummyY,       // Giữ nguyên vị trí y
-                duration: 5000,  // Thời gian di chuyển
+                duration: 4000,  // Thời gian di chuyển
                 yoyo: true,      // Phát ngược lại tween
                 repeat: -1       // Lặp lại vô hạn
             });
@@ -485,11 +432,12 @@ class Main extends Phaser.Scene {
             if (mummy) {
                 // Chạy animation 'explode'
                 mummy.anims.play('explode');
-        
+                bullet.destroy();
                 // Lắng nghe sự kiện animationcomplete
                 mummy.on('animationcomplete', function () {
                     // Sau khi animation 'explode' hoàn thành, hủy bỏ sprite
                     mummy.destroy();
+                    // console.log(bullet)
         
                 });
             }
@@ -509,7 +457,7 @@ class Main extends Phaser.Scene {
             live -= 1;
 
             text.setText([
-                'Tên ' + 'Player1',
+                'Tên ' + namePlayer,
                 'Mạng ' + live,
                 'Score ' + score
             ])
@@ -534,12 +482,11 @@ class Main extends Phaser.Scene {
         this.anims.create({
             key: 'dragon-fly',
             frames: this.anims.generateFrameNumbers('dragon', { start: 6, end: 11}),
-            frameRate: 12,
+            frameRate: 14,
             repeat: -1
         });
 
-        this.dragon = this.physics.add.sprite(2400, 200, 'dragon')
-        .play('dragon-fly')
+        this.dragon = this.physics.add.sprite(2500, 300, 'dragon').play('dragon-fly')
 
         this.dragon.body.immovable = true;
         this.dragon.body.allowGravity = false;
@@ -548,8 +495,8 @@ class Main extends Phaser.Scene {
             targets: this.dragon.body.velocity,
             loop: -1,
             tweens: [
-                { x:    0, y: 50, duration: 2000, ease: 'Stepped' },
-                { x:    0, y:    -50, duration: 2000, ease: 'Stepped' },
+                { x:    0, y: 50, duration: 1000, ease: 'Stepped' },
+                { x:    0, y:    -50, duration: 1000, ease: 'Stepped' },
 
             ]
         });
@@ -560,10 +507,11 @@ class Main extends Phaser.Scene {
             callback: () => {
                 if(this.canShoot) {
 
-                    const bullet = this.bullets.getFirstDead(false);
+                    const bullet = this.bulletsDragon.getFirstDead(false);
 
                     if(bullet) {
-                        bullet.fire(this.dragon.x, this.dragon.y, -400, 120);
+
+                        bullet.fire(this.dragon.x, this.dragon.y, -600, 120);
     
                         this.monsterBullets.push(bullet);
                     }
@@ -571,6 +519,92 @@ class Main extends Phaser.Scene {
 
             }
         });
+
+        // > Đạn người chơi và rồng
+        this.physics.add.overlap(this.bullet1s, this.dragon, (bullet, dragon) => {
+            this.dragon.anims.play('explode');
+
+            if (this.dragon) {
+                // Chạy animation 'explode'
+
+                bullet.destroy()
+                // Lắng nghe sự kiện animationcomplete
+                this.dragon.on('animationcomplete', function () {
+                    // Sau khi animation 'explode' hoàn thành, hủy bỏ sprite
+                    this.dragon.destroy();
+
+                });
+                this.monsterBullets.forEach(bulletdragon => {
+                    bulletdragon.disableBody(true, true);
+                });
+
+                this.monsterBullets = [];
+
+                this.canShoot = false
+            }
+        });
+
+        // > Người chơi và rồng
+        this.physics.add.overlap(this.player, this.dragon, (player, dragon) => {
+
+            this.player.setTintFill(0xff0000);
+
+            this.player.x -= 100;
+            this.player.y -= 100;
+
+            this.time.delayedCall(500, () => {
+                this.player.clearTint();
+            })
+
+            live -= 1;
+
+            text.setText([
+                'Tên ' + namePlayer,
+                'Mạng ' + live,
+                'Score ' + score
+            ])
+
+            if(live == 0) {
+                let result = confirm("Bạn đã thua! Bạn có muốn chơi lại")
+    
+                if(result) {
+                    // this.player.setPosition(100, 100)
+                    window.location.reload()
+                }
+            }
+
+        }, null, this); 
+
+        // > Người chơi và đạn rồng
+        this.physics.add.overlap(this.player, this.bulletsDragon, (player, dragon) => {
+
+            this.player.setTintFill(0xff0000);
+
+            this.player.x -= 100;
+            this.player.y -= 100;
+
+            this.time.delayedCall(500, () => {
+                this.player.clearTint();
+            })
+
+            live -= 1;
+
+            text.setText([
+                'Tên ' + namePlayer,
+                'Mạng ' + live,
+                'Score ' + score
+            ])
+
+            if(live == 0) {
+                let result = confirm("Bạn đã thua! Bạn có muốn chơi lại")
+    
+                if(result) {
+                    // this.player.setPosition(100, 100)
+                    window.location.reload()
+                }
+            }
+
+        }, null, this); 
     }
 
     //FUNC: Hàm tạo phần thưởng
@@ -600,10 +634,12 @@ class Main extends Phaser.Scene {
     //FUNC: Hàm tạo văn bản trò chơi
     createText() {
 
+
         text = this.add.text(20, 20, '', { fontSize: '28px', fill: 'white' });
+        
         text.setText([
-            'Tên  ' + 'Player1',
-            'Mạng ' + '3',
+            'Tên  ' + namePlayer,
+            'Mạng ' + live,
             'Score ' + '0'
         ])
         text.setScrollFactor(0);
@@ -615,8 +651,12 @@ class Main extends Phaser.Scene {
 
         // this.rock = this.physics.add.group();
 
-        const rock2 = this.physics.add.image(1856, 300, 'rock');
-        const rock3 = this.physics.add.image(2070, 400, 'rock');
+        const rock1 = this.physics.add.image(1856, 300, 'rock');
+        const rock2 = this.physics.add.image(2070, 400, 'rock');
+        const rock3 = this.physics.add.image(3392, 200, 'rock');
+
+        rock1.body.immovable = true;
+        rock1.body.allowGravity = false;
 
         rock2.body.immovable = true;
         rock2.body.allowGravity = false;
@@ -625,7 +665,7 @@ class Main extends Phaser.Scene {
         rock3.body.allowGravity = false;
 
         this.tweens.chain({
-            targets: rock2.body.velocity,
+            targets: rock1.body.velocity,
             loop: -1,
             tweens: [
                 { x:    0, y: 60, duration: 4000, ease: 'Stepped' },
@@ -634,7 +674,7 @@ class Main extends Phaser.Scene {
         });
 
         this.tweens.chain({
-            targets: rock3.body.velocity,
+            targets: rock2.body.velocity,
             loop: -1,
             tweens: [
                 { x:    60, y:0, duration: 4000, ease: 'Stepped' },
@@ -642,8 +682,17 @@ class Main extends Phaser.Scene {
             ]
         });
 
+        this.physics.add.collider(this.player, rock1);
+
         this.physics.add.collider(this.player, rock2);
-        this.physics.add.collider(this.player, rock3);
+
+        this.physics.add.collider(this.player, rock3, () =>  {
+            window.location.href = "round-2.html"
+        });
+
+    }
+    //FUNC: Hàm tạo chướng ngại vật biến mật
+    createClounds() {
 
         for(var i = 1; i <= 4; i ++) {
 
@@ -651,6 +700,9 @@ class Main extends Phaser.Scene {
 
             tp.body.immovable = true;
             tp.body.allowGravity = false;
+
+            // Thêm tp vào mảng
+            tpArray.push(tp);
 
             this.physics.add.collider(this.player, tp, () => {
 
@@ -705,7 +757,7 @@ class Main extends Phaser.Scene {
         })
         spaceKey.on('down', (event) => {
 
-            this.bullet1s.fire(this.player.x, this.player.y, 400, 0);
+            this.bullet1s.fire(this.player.x, this.player.y, 500, 0);
             
             this.sound.playAudioSprite('sfx', "shot");
 
@@ -724,22 +776,23 @@ class Main extends Phaser.Scene {
     //FUNC: Hàm khởi tạo đạn bắn
     createBullets() {
 
-        this.bullets = this.add.existing(
+        // > Khởi tạo đạn cho quái
+        this.bulletsDragon = this.add.existing(
             new Bullets(this.physics.world, this, { name: 'bullets' })
         );
 
-        // khởi tạo nhiều viên đạn cho quái
-        this.bullets.createMultiple({
+        // > khởi tạo nhiều viên đạn cho quái
+        this.bulletsDragon.createMultiple({
             key: 'bullet',
             quantity: 1000
         });
 
-        //khởi tạo đạn cho người chơi
+        // > khởi tạo đạn cho người chơi
         this.bullet1s = this.add.existing(
             new Bullets(this.physics.world, this, { name: 'bullet1s' })
         );
 
-        // khởi tạo nhiều viên đạn cho người chơi
+        // > khởi tạo nhiều viên đạn cho người chơi
         this.bullet1s.createMultiple({
             key: 'bullet1',
             quantity: 1000
@@ -804,68 +857,9 @@ function collectStar (player, star) {
     score += 10;
     
     text.setText([
-        'Tên  ' + 'Player1',
+        'Tên  ' + namePlayer,
         'Mạng ' + live,
         'Score ' + score
     ])
 }
-
-function subHeart() {
-    
-    this.player.setTintFill(0xff0000);
-
-    // this.player.x -= 100;
-    // this.player.y -= 100;
-    this.player.setPosition(1000, 300);
-
-    this.time.delayedCall(500, () => {
-        this.player.clearTint();
-    })
-
-    live -= 1;
-
-    text.setText([
-        'Tên ' + 'Player1',
-        'Mạng ' + live,
-        'Score ' + score
-    ])
-
-}
-
-function hiddenMonster(bullet, mummy) {
-
-    if (this.mummy1) {
-        // Chạy animation 'explode'
-        this.mummy1.anims.play('explode');
-
-        // Lắng nghe sự kiện animationcomplete
-        this.mummy1.on('animationcomplete', function () {
-            // Sau khi animation 'explode' hoàn thành, hủy bỏ sprite
-            this.mummy1.destroy();
-
-        }, this);
-    }
-}
-// function hiddenMonster() {
-//     this.mummy1.anims.play('explode')
-
-//     // this.mummy1.destroy();
-// }
-
-// > Hàm ẩn quái
-// function hiddenMonster (x, y) {
-
-//     this.add.sprite(x, y, 'boom').play('explode2');
-
-//     this.monster.disableBody(true, true);
-
-//     this.monsterBullets.forEach(bullet => {
-//         bullet.disableBody(true, true);
-//     });
-
-//     this.monsterBullets = [];
-
-//     this.canShoot = false
-// }
-
 

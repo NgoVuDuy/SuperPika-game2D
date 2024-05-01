@@ -1,6 +1,6 @@
 const config = {
     type: Phaser.AUTO,
-    width: 800,
+    width: 768,
     height: 550,
     backgroundColor: '#2d2d2d',
     parent: 'phaser-example',
@@ -12,7 +12,7 @@ const config = {
                 y: 800}
         }
     },
-    scene: Round1
+    scene: Round2
 };
 
 const game = new Phaser.Game(config);
